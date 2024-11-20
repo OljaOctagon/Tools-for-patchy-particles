@@ -11,12 +11,14 @@ the first two are alternating to create one line and the thirds one creates colu
 * if length of rhombi is different from one, everything can be scaled 
 '''
 
-N_particles = 900 
-N_side = 30
+N_particles = 3000
+N_side1 = 60
+N_side2 = 50
+
 alpha=np.pi/3
 delta=0.4 
 l=1 
-Lbox=
+Lbox= 81
 start = np.array([Lbox/4,Lbox/4])
 
 sin60 = np.sin(np.pi/3.)
@@ -34,6 +36,8 @@ D = np.abs(1-2*delta)
 lattice_a1 = np.array([1 + cA*D, -sA*D])
 lattice_b1 = np.array([-cA + D, sA])
 lattice_b2 = np.array([1 - cA*D, sA*D])
+
+
 def get_edge_points(pos_i,ax_n,sign_p):
     edge_n = np.zeros(2)
     edge_n = pos_i + sign_p[0]*ax_n[:,0]/2. + sign_p[1]*ax_n[:,1]/2.
@@ -56,8 +60,8 @@ def get_orient(v, rot_mat):
 points = np.zeros([N_particles,2])
 ci = 0
 
-for i in range(N_side):
-    for j in range(N_side):
+for i in range(N_side1):
+    for j in range(N_side2):
            
             c1 = np.ceil(i/2)
             c2 = np.ceil((i-1)/2)
@@ -72,7 +76,12 @@ points = points + start
 rhombus_color='#752b54'
 fig,ax=plt.subplots()
 for i in range(N_particles):
-    rotmat_i = rotation_matrix(2*np.pi/3)
+    if i%2 == 0:
+         theta = 2*np.pi/3
+    if i%2 == 1: 
+         theta = 5*np.pi/3
+
+    rotmat_i = rotation_matrix(theta)
     ax_n = get_orient(ax0, rotmat_i)
 
     edges[0] = get_edge_points(points[i],ax_n,np.array([-1,-1]))
@@ -90,4 +99,14 @@ plt.axis('off')
 plt.savefig("P3.pdf")
 plt.close()
 
-np.tofile()
+pos = np.zeros((N_particles,3))
+pos[:,:2] = points
+
+flat_pos = pos.flatten()
+flat_pos.tofile("positions_1.bin", sep='')
+
+qorient = np.zeros((N_particles,5))
+qorient[:,4] = np.ones(N_particles)*2*np.pi/3
+flat_qorient = qorient.flatten()
+flat_qorient.tofile("orientations_1.bin", sep='')
+
